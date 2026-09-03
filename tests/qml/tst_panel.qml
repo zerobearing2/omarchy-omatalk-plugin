@@ -80,7 +80,7 @@ TestCase {
 
   function test_refresh_fills_config_and_version() {
     panel.daemonInstalled = true
-    compare(panel.version, "unknown")
+    compare(panel.daemonVersion, "unknown")
     panel.refresh()
     findProc("config voices --json").complete(0, '["af_heart","jf_skip","am_test"]', "")
     findProc("config get --json").complete(0, '{"voice":"af_heart","speed":1.25}', "")
@@ -88,7 +88,7 @@ TestCase {
     compare(panel.voiceOptions, ["af_heart", "am_test"])
     compare(panel.voice, "af_heart")
     compare(panel.speed, 1.25)
-    compare(panel.version, "0.2.1-test")
+    compare(panel.daemonVersion, "0.2.1-test")
     compare(panel.daemonVersionLabel, "Omatalk 0.2.1-test")
   }
 
@@ -102,7 +102,7 @@ TestCase {
   function test_installed_panel_shows_plugin_and_daemon_versions() {
     panel.daemonInstalled = true
     panel.pluginVersion = "1.2.3"
-    panel.version = "0.2.1-test"
+    panel.daemonVersion = "0.2.1-test"
     compare(panel.pluginVersionLabel, "Plugin 1.2.3")
     compare(panel.daemonVersionLabel, "Omatalk 0.2.1-test")
     compare(panel.showingSetup, false)
@@ -113,11 +113,17 @@ TestCase {
     compare(panel.pluginVersionLabel, "Plugin 1.0.0")
   }
 
+  function test_unknown_plugin_version_still_labeled() {
+    panel.pluginVersion = "unknown"
+    compare(panel.pluginVersionLabel, "Plugin unknown")
+  }
+
   function test_failed_version_is_unknown() {
     panel.daemonInstalled = true
     panel.refresh()
     findProc("omatalk version").complete(1, "", "nope")
-    compare(panel.version, "unknown")
+    compare(panel.daemonVersion, "unknown")
+    compare(panel.daemonVersionLabel, "Omatalk unknown")
   }
 
   function test_set_voice_saves_and_previews() {

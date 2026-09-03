@@ -49,16 +49,10 @@ Panel {
   property real speed: 1.0
   property string voiceError: ""
   property string speedError: ""
-  property string version: "unknown"
+  property string daemonVersion: "unknown"
   property string pluginVersion: "unknown"
   readonly property string pluginVersionLabel: "Plugin " + pluginVersion
-  readonly property string daemonVersionLabel: "Omatalk " + version
-
-  function pluginFilePath(name) {
-    var url = String(Qt.resolvedUrl(name))
-    if (url.indexOf("file://") === 0) return url.slice(7)
-    return url
-  }
+  readonly property string daemonVersionLabel: "Omatalk " + daemonVersion
 
   function matchedPrefix(name) {
     for (var i = 0; i < englishPrefixes.length; i++) {
@@ -216,7 +210,11 @@ Panel {
   // Plugin version is this checkout's manifest.json, not `omatalk version`.
   FileView {
     id: manifestFile
-    path: root.pluginFilePath("manifest.json")
+    path: {
+      var url = String(Qt.resolvedUrl("manifest.json"))
+      if (url.indexOf("file://") === 0) return url.slice(7)
+      return url
+    }
     printErrors: false
     onLoaded: {
       try {
@@ -236,13 +234,13 @@ Panel {
       waitForEnd: true
       onStreamFinished: {
         var next = text.trim()
-        root.version = next !== "" ? next : "unknown"
+        root.daemonVersion = next !== "" ? next : "unknown"
       }
     }
     // Unlike voices/get, which keep last-known functional state on a bad
     // reply, version is a label. A failed or empty lookup must not keep
     // showing a stale release number — "unknown" is the honest fallback.
-    onExited: function(exitCode) { if (exitCode !== 0) root.version = "unknown" }
+    onExited: function(exitCode) { if (exitCode !== 0) root.daemonVersion = "unknown" }
   }
 
   KeyboardPanel {
@@ -407,7 +405,6 @@ Panel {
 
         Text {
           objectName: "omatalkPluginVersion"
-          visible: root.pluginVersion !== "" && root.pluginVersion !== "unknown"
           text: root.pluginVersionLabel
           color: Qt.darker(Color.popups.text, 1.3)
           font.family: Style.font.family

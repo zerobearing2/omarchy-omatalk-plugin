@@ -41,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: Read version from manifest.json
         id: ver
         run: |
@@ -63,6 +65,10 @@ jobs:
         env:
           VERSION: ${{ steps.ver.outputs.version }}
           GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
         run: |
           tag="v$VERSION"
-          gh release create "$tag" --title "$tag" --generate-notes
+          # Pin the tag to this run's SHA, not whatever master HEAD is when
+          # the create step runs — a push during the test job would otherwise
+          # ship an untested commit under this version.
+          gh release create "$tag" --title "$tag" --generate-notes --target "$SHA"
