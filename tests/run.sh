@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+for f in manifest.json BarWidget.qml Panel.qml README.md LICENSE preview.png; do
+  if [[ ! -f $f ]]; then
+    echo "missing $f" >&2
+    exit 1
+  fi
+done
+
+if [[ -e install.sh || -e uninstall.sh ]]; then
+  echo "install/uninstall scripts must not live in the plugin tree" >&2
+  exit 1
+fi
+
+link=$(find . -name .git -prune -o -type l -print -quit)
+if [[ -n $link ]]; then
+  echo "symlinks are not allowed in the plugin tree: $link" >&2
+  exit 1
+fi
+
+if ! grep -q 'omarchy plugin add https://github.com/zerobearing2/omarchy-omatalk-plugin.git --enable' README.md; then
+  echo "README must document the store add command" >&2
+  exit 1
+fi
+
+id=$(jq -r '.id' manifest.json)
+[[ $id == zerobearing.omatalk ]] || {
+  echo "manifest id must stay zerobearing.omatalk" >&2
+  exit 1
+}
+
+if command -v omarchy >/dev/null 2>&1; then
+  omarchy plugin validate "$ROOT"
+else
+  echo "skip: omarchy plugin validate (omarchy not on PATH)"
+fi
+
+runner=""
+for candidate in /usr/lib/qt6/bin/qmltestrunner "$(command -v qmltestrunner || true)"; do
+  if [[ -n $candidate && -x $candidate ]]; then
+    runner=$candidate
+    break
+  fi
+done
+
+if [[ -z $runner ]]; then
+  echo "skip: qmltestrunner not installed"
+  exit 0
+fi
+
+QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
+  "$runner" -input "$ROOT/tests/qml" -import "$ROOT/tests/qml/imports" -o -,txt

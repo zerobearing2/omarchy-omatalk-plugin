@@ -56,3 +56,14 @@ Full teardown (unit, launcher, plugin, optional models and config) is
 `uninstall.sh` from the application repo / https://omatalk.zerobearing.com.
 
 The installer never edits `bindings.lua` or `config.toml`.
+
+## Development
+
+This repository is the plugin. The Daemon is https://github.com/zerobearing2/omatalk.
+
+```sh
+make test
+```
+
+`omarchy plugin add` clones this whole git tree, including tests. The shell
+only loads the QML entry points in `manifest.json`.
