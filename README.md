@@ -28,6 +28,13 @@ If the Daemon is not installed, click the megaphone and choose Install Omatalk.
 That runs the public installer from https://omatalk.zerobearing.com in Omarchy's
 floating terminal. Models are about 185MB.
 
+If the megaphone is missing or the panel still looks like an older checkout,
+reload the bar:
+
+```sh
+omarchy restart shell
+```
+
 The site is also a complete door for the Daemon, the launcher, and this plugin.
 See [zerobearing2/omatalk](https://github.com/zerobearing2/omatalk).
 
@@ -46,7 +53,8 @@ omatalk upgrade
 ```
 
 A Daemon upgrade does not rewrite a git-managed plugin checkout. A plugin
-update does not rebuild the venv or stop the Daemon.
+update does not rebuild the venv or stop the Daemon. Restart the shell after
+a plugin update if the panel still shows the previous QML.
 
 ## Remove
 

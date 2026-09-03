@@ -13,7 +13,7 @@ QtObject {
 
   function env(name) {
     if (envValues[name] !== undefined) return envValues[name]
-    return ""
+    return null
   }
 
   function setEnv(name, value) {

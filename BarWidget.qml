@@ -13,9 +13,9 @@ BarWidget {
   property string daemonState: "idle"
   property bool connectionLost: false
   property bool daemonInstalled: false
-  readonly property string socketOverride: Quickshell.env("OMATALK_SOCKET")
-  readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR")
-  readonly property string homeDir: Quickshell.env("HOME")
+  readonly property string socketOverride: root.envText("OMATALK_SOCKET")
+  readonly property string runtimeDir: root.envText("XDG_RUNTIME_DIR")
+  readonly property string homeDir: root.envText("HOME")
   readonly property bool speaking: daemonState === "speaking"
   readonly property bool daemonUnavailable: daemonInstalled && (
     daemonState === "error" || (connectionLost && !reconnectGrace.running)
@@ -28,6 +28,12 @@ BarWidget {
     if (socketOverride !== "") return socketOverride
     if (runtimeDir !== "") return runtimeDir + "/omatalk/omatalk.sock"
     return ""
+  }
+
+  function envText(name) {
+    var v = Quickshell.env(name)
+    if (v === null || v === undefined) return ""
+    return String(v)
   }
 
   function applyState(raw) {

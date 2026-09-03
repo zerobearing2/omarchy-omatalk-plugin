@@ -21,14 +21,22 @@ Panel {
   property string siteBase: "https://omatalk.zerobearing.com"
   readonly property bool showingSetup: !daemonInstalled
   property string launcherPath: {
-    var home = Quickshell.env("HOME")
+    var home = root.envText("HOME")
     if (home !== "") return home + "/.local/bin/omatalk"
     return ""
   }
 
+  // Quickshell.env returns null when the variable is unset. String(null)
+  // is "null", which is how the setup curl became `curl ... null/install.sh`.
+  function envText(name) {
+    var v = Quickshell.env(name)
+    if (v === null || v === undefined) return ""
+    return String(v)
+  }
+
   Component.onCompleted: {
-    var s = Quickshell.env("SITE_BASE")
-    if (s !== "") root.siteBase = String(s).replace(/\/+$/, "")
+    var s = root.envText("SITE_BASE")
+    if (s !== "") root.siteBase = s.replace(/\/+$/, "")
   }
 
   // PanelSlider only snaps `step` for wheel nudges — dragging reports
@@ -79,7 +87,7 @@ Panel {
   }
 
   function installLockDir() {
-    var runtime = Quickshell.env("XDG_RUNTIME_DIR")
+    var runtime = root.envText("XDG_RUNTIME_DIR")
     if (runtime === "") runtime = "/tmp"
     return runtime + "/omatalk"
   }

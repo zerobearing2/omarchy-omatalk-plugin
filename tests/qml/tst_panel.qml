@@ -47,6 +47,8 @@ TestCase {
   function test_open_without_launcher_shows_setup_and_skips_config_cli() {
     compare(panel.daemonInstalled, false)
     verify(panel.showingSetup)
+    compare(Quickshell.env("SITE_BASE"), null)
+    compare(panel.siteBase, "https://omatalk.zerobearing.com")
     compare(panel.curlInstall, "curl -fsSL https://omatalk.zerobearing.com/install.sh | bash")
     panel.opened = true
     compare(findProc("omatalk version").running, false)
