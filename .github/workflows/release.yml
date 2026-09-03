@@ -28,6 +28,7 @@ jobs:
             qml6-module-qttest \
             qml6-module-qtquick-window \
             qml6-module-qtqml \
+            qml6-module-qtqml-workerscript \
             libgl1 \
             libegl1
       - name: Test
