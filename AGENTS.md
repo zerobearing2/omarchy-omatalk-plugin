@@ -17,3 +17,17 @@ make test
 
 Version is `manifest.json`. `make bump` (or `make bump VERSION=x.y.z`) commits
 it; push, then `make release` to run tests and cut the GitHub release.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as local markdown under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five canonical triage role strings. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` at root + `docs/adr/`. See `docs/agents/domain.md`.
