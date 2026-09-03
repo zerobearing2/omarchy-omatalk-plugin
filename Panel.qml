@@ -19,9 +19,8 @@ Panel {
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
   property string siteBase: "https://omatalk.zerobearing.com"
-  readonly property string curlInstall: "curl -fsSL " + siteBase + "/install.sh | bash"
   readonly property bool showingSetup: !daemonInstalled
-  readonly property string launcherPath: {
+  property string launcherPath: {
     var home = Quickshell.env("HOME")
     if (home !== "") return home + "/.local/bin/omatalk"
     return ""
@@ -85,8 +84,14 @@ Panel {
     return runtime + "/omatalk"
   }
 
+  function curlPipe(url) {
+    return "curl -fsSL " + url + " | bash"
+  }
+
+  readonly property string curlInstall: curlPipe(siteBase + "/install.sh")
+
   function installInnerCommand() {
-    return "curl -fsSL " + siteBase + "/install.sh?ts=" + Date.now() + " | bash"
+    return curlPipe(siteBase + "/install.sh?ts=" + Date.now())
   }
 
   function installLaunchCommand() {

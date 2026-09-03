@@ -52,6 +52,7 @@ BarWidget {
     if ("anchorItem" in target) target.anchorItem = button
     if ("daemonUnavailable" in target) target.daemonUnavailable = root.daemonUnavailable
     if ("daemonInstalled" in target) target.daemonInstalled = root.daemonInstalled
+    if ("launcherPath" in target && root.launcherPath !== "") target.launcherPath = root.launcherPath
   }
 
   function togglePanel() {
