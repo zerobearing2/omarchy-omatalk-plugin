@@ -51,8 +51,11 @@ Panel {
   property string speedError: ""
   property string daemonVersion: "unknown"
   property string pluginVersion: "unknown"
-  readonly property string pluginVersionLabel: "Plugin " + pluginVersion
-  readonly property string daemonVersionLabel: "Omatalk " + daemonVersion
+  readonly property string versionsLabel: {
+    var line = "plugin " + pluginVersion
+    if (root.daemonInstalled) line += " · omatalk " + daemonVersion
+    return line
+  }
 
   function matchedPrefix(name) {
     for (var i = 0; i < englishPrefixes.length; i++) {
@@ -401,23 +404,12 @@ Panel {
           }
         }
 
-        PanelSeparator {}
-
         Text {
-          objectName: "omatalkPluginVersion"
-          text: root.pluginVersionLabel
-          color: Qt.darker(Color.popups.text, 1.3)
+          objectName: "omatalkVersions"
+          text: root.versionsLabel
+          color: Qt.darker(Color.popups.text, 1.6)
           font.family: Style.font.family
-          font.pixelSize: Style.font.bodySmall
-        }
-
-        Text {
-          objectName: "omatalkVersion"
-          visible: root.daemonInstalled
-          text: root.daemonVersionLabel
-          color: Qt.darker(Color.popups.text, 1.3)
-          font.family: Style.font.family
-          font.pixelSize: Style.font.bodySmall
+          font.pixelSize: Style.font.caption
         }
       }
     }

@@ -8,5 +8,6 @@ QtObject {
     property int display: 16
     property int body: 12
     property int bodySmall: 10
+    property int caption: 9
   }
 }

@@ -89,12 +89,12 @@ TestCase {
     compare(panel.voice, "af_heart")
     compare(panel.speed, 1.25)
     compare(panel.daemonVersion, "0.2.1-test")
-    compare(panel.daemonVersionLabel, "Omatalk 0.2.1-test")
+    compare(panel.versionsLabel, "plugin 1.0.0 · omatalk 0.2.1-test")
   }
 
   function test_plugin_version_label_is_independent_of_daemon() {
     panel.pluginVersion = "1.2.3"
-    compare(panel.pluginVersionLabel, "Plugin 1.2.3")
+    compare(panel.versionsLabel, "plugin 1.2.3")
     compare(panel.showingSetup, true)
     compare(panel.daemonInstalled, false)
   }
@@ -103,19 +103,18 @@ TestCase {
     panel.daemonInstalled = true
     panel.pluginVersion = "1.2.3"
     panel.daemonVersion = "0.2.1-test"
-    compare(panel.pluginVersionLabel, "Plugin 1.2.3")
-    compare(panel.daemonVersionLabel, "Omatalk 0.2.1-test")
+    compare(panel.versionsLabel, "plugin 1.2.3 · omatalk 0.2.1-test")
     compare(panel.showingSetup, false)
   }
 
   function test_plugin_version_loads_from_manifest() {
     compare(panel.pluginVersion, "1.0.0")
-    compare(panel.pluginVersionLabel, "Plugin 1.0.0")
+    compare(panel.versionsLabel, "plugin 1.0.0")
   }
 
   function test_unknown_plugin_version_still_labeled() {
     panel.pluginVersion = "unknown"
-    compare(panel.pluginVersionLabel, "Plugin unknown")
+    compare(panel.versionsLabel, "plugin unknown")
   }
 
   function test_failed_version_is_unknown() {
@@ -123,7 +122,7 @@ TestCase {
     panel.refresh()
     findProc("omatalk version").complete(1, "", "nope")
     compare(panel.daemonVersion, "unknown")
-    compare(panel.daemonVersionLabel, "Omatalk unknown")
+    compare(panel.versionsLabel, "plugin 1.0.0 · omatalk unknown")
   }
 
   function test_set_voice_saves_and_previews() {
