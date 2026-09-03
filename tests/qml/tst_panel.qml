@@ -87,6 +87,28 @@ TestCase {
     compare(panel.voice, "af_heart")
     compare(panel.speed, 1.25)
     compare(panel.version, "0.2.1-test")
+    compare(panel.daemonVersionLabel, "Omatalk 0.2.1-test")
+  }
+
+  function test_plugin_version_label_is_independent_of_daemon() {
+    panel.pluginVersion = "1.2.3"
+    compare(panel.pluginVersionLabel, "Plugin 1.2.3")
+    compare(panel.showingSetup, true)
+    compare(panel.daemonInstalled, false)
+  }
+
+  function test_installed_panel_shows_plugin_and_daemon_versions() {
+    panel.daemonInstalled = true
+    panel.pluginVersion = "1.2.3"
+    panel.version = "0.2.1-test"
+    compare(panel.pluginVersionLabel, "Plugin 1.2.3")
+    compare(panel.daemonVersionLabel, "Omatalk 0.2.1-test")
+    compare(panel.showingSetup, false)
+  }
+
+  function test_plugin_version_loads_from_manifest() {
+    compare(panel.pluginVersion, "1.0.0")
+    compare(panel.pluginVersionLabel, "Plugin 1.0.0")
   }
 
   function test_failed_version_is_unknown() {

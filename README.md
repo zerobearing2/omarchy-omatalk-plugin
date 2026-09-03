@@ -7,12 +7,16 @@ back. A megaphone in the bar follows idle, speaking, and unavailable.
 
 ## Requirements
 
+This plugin is the bar widget and config panel. Speech itself is the Omatalk
+Daemon (`omatalkd`) in [zerobearing2/omatalk](https://github.com/zerobearing2/omatalk).
+The plugin does not work without that Daemon. It does not start, stop, or
+parent it.
+
 - Omarchy with Quickshell plugin support.
 - The Omatalk Daemon: uv, Kokoro models (~185MB), a systemd user unit,
   PipeWire, and wl-clipboard. If the Daemon is missing, the panel offers
   Install Omatalk.
-- No sudo. No pkexec. The plugin does not start a second Quickshell process
-  and does not parent the Daemon.
+- No sudo. No pkexec. The plugin does not start a second Quickshell process.
 
 ## Install
 
@@ -25,6 +29,7 @@ That runs the public installer from https://omatalk.zerobearing.com in Omarchy's
 floating terminal. Models are about 185MB.
 
 The site is also a complete door for the Daemon, the launcher, and this plugin.
+See [zerobearing2/omatalk](https://github.com/zerobearing2/omatalk).
 
 ## Update
 
@@ -53,13 +58,15 @@ Plugin remove unloads the megaphone and deletes this checkout. It leaves the
 Daemon, the venv, the models, and your config. F8 still speaks.
 
 Full teardown (unit, launcher, plugin, optional models and config) is
-`uninstall.sh` from the application repo / https://omatalk.zerobearing.com.
+`uninstall.sh` from [zerobearing2/omatalk](https://github.com/zerobearing2/omatalk)
+/ https://omatalk.zerobearing.com.
 
 The installer never edits `bindings.lua` or `config.toml`.
 
 ## Development
 
-This repository is the plugin. The Daemon is https://github.com/zerobearing2/omatalk.
+This repository is the plugin. The Daemon, CLI, and site live in
+https://github.com/zerobearing2/omatalk. Default branch is `master`.
 
 ```sh
 make test
@@ -67,3 +74,13 @@ make test
 
 `omarchy plugin add` clones this whole git tree, including tests. The shell
 only loads the QML entry points in `manifest.json`.
+
+Version lives in `manifest.json`. The panel shows it next to the installed
+Daemon version (`omatalk version`).
+
+```sh
+make bump              # patch + 1 and commit
+make bump VERSION=1.2.0
+git push
+make release           # tests must pass; then cuts the GitHub release
+```

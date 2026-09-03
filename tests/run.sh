@@ -33,6 +33,17 @@ id=$(jq -r '.id' manifest.json)
   exit 1
 }
 
+ver=$(jq -r '.version' manifest.json)
+[[ $ver =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+  echo "manifest version must be semver x.y.z, got: $ver" >&2
+  exit 1
+}
+
+if ! grep -q 'https://github.com/zerobearing2/omatalk' README.md; then
+  echo "README must point at the Daemon repository" >&2
+  exit 1
+fi
+
 if command -v omarchy >/dev/null 2>&1; then
   omarchy plugin validate "$ROOT"
 else
@@ -48,6 +59,10 @@ for candidate in /usr/lib/qt6/bin/qmltestrunner "$(command -v qmltestrunner || t
 done
 
 if [[ -z $runner ]]; then
+  if [[ -n ${CI:-} ]]; then
+    echo "qmltestrunner is required in CI" >&2
+    exit 1
+  fi
   echo "skip: qmltestrunner not installed"
   exit 0
 fi

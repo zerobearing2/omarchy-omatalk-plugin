@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QML test runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            jq \
+            qt6-declarative-dev-tools \
+            qml6-module-qtquick \
+            qml6-module-qttest \
+            qml6-module-qtquick-window \
+            qml6-module-qtqml \
+            libgl1 \
+            libegl1
+      - name: Test
+        run: make test
+  release:
+    needs: test
+    # Manual only: pushes to master run tests but do not cut a release on
+    # their own, so several PRs can land before anyone decides to ship.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read version from manifest.json
+        id: ver
+        run: |
+          # manifest.json's committed version is the single source of
+          # truth — bump it with `make bump` (which also commits) before
+          # triggering this workflow. Refusing a stale/reused version here
+          # catches the "forgot to bump" case instead of silently reusing or
+          # clobbering a prior release's tag.
+          version=$(jq -r .version manifest.json)
+          if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "could not read version from manifest.json" >&2
+            exit 1
+          fi
+          if git ls-remote --tags origin "refs/tags/v$version" | grep -q "refs/tags/v$version"; then
+            echo "v$version already exists — bump manifest.json's version first (make bump)" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Create GitHub release
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$VERSION"
+          gh release create "$tag" --title "$tag" --generate-notes

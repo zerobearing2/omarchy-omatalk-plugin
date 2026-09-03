@@ -43,6 +43,15 @@ Panel {
   property string voiceError: ""
   property string speedError: ""
   property string version: "unknown"
+  property string pluginVersion: "unknown"
+  readonly property string pluginVersionLabel: "Plugin " + pluginVersion
+  readonly property string daemonVersionLabel: "Omatalk " + version
+
+  function pluginFilePath(name) {
+    var url = String(Qt.resolvedUrl(name))
+    if (url.indexOf("file://") === 0) return url.slice(7)
+    return url
+  }
 
   function matchedPrefix(name) {
     for (var i = 0; i < englishPrefixes.length; i++) {
@@ -189,6 +198,22 @@ Panel {
       onStreamFinished: root.speedError = text.trim()
     }
     onExited: function(exitCode) { if (exitCode === 0) root.speedError = "" }
+  }
+
+  // Plugin version is this checkout's manifest.json, not `omatalk version`.
+  FileView {
+    id: manifestFile
+    path: root.pluginFilePath("manifest.json")
+    printErrors: false
+    onLoaded: {
+      try {
+        var parsed = JSON.parse(text())
+        if (parsed.version) root.pluginVersion = String(parsed.version)
+      } catch (e) {
+        root.pluginVersion = "unknown"
+      }
+    }
+    onLoadFailed: root.pluginVersion = "unknown"
   }
 
   Process {
@@ -363,16 +388,26 @@ Panel {
             font.pixelSize: Style.font.bodySmall
             font.italic: true
           }
+        }
 
-          PanelSeparator {}
+        PanelSeparator {}
 
-          Text {
-            objectName: "omatalkVersion"
-            text: root.version
-            color: Qt.darker(Color.popups.text, 1.3)
-            font.family: Style.font.family
-            font.pixelSize: Style.font.bodySmall
-          }
+        Text {
+          objectName: "omatalkPluginVersion"
+          visible: root.pluginVersion !== "" && root.pluginVersion !== "unknown"
+          text: root.pluginVersionLabel
+          color: Qt.darker(Color.popups.text, 1.3)
+          font.family: Style.font.family
+          font.pixelSize: Style.font.bodySmall
+        }
+
+        Text {
+          objectName: "omatalkVersion"
+          visible: root.daemonInstalled
+          text: root.daemonVersionLabel
+          color: Qt.darker(Color.popups.text, 1.3)
+          font.family: Style.font.family
+          font.pixelSize: Style.font.bodySmall
         }
       }
     }
