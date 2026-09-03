@@ -24,7 +24,7 @@ Panel {
   readonly property string launcherPath: {
     var home = Quickshell.env("HOME")
     if (home !== "") return home + "/.local/bin/omatalk"
-    return "omatalk"
+    return ""
   }
 
   Component.onCompleted: {
@@ -98,7 +98,7 @@ Panel {
   }
 
   function refresh() {
-    if (!root.daemonInstalled) return
+    if (!root.daemonInstalled || root.launcherPath === "") return
     var bin = root.launcherPath
     voicesProc.command = [bin, "config", "voices", "--json"]
     getProc.command = [bin, "config", "get", "--json"]
