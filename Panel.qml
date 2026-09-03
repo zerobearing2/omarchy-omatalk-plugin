@@ -21,6 +21,11 @@ Panel {
   property string siteBase: "https://omatalk.zerobearing.com"
   readonly property string curlInstall: "curl -fsSL " + siteBase + "/install.sh | bash"
   readonly property bool showingSetup: !daemonInstalled
+  readonly property string launcherPath: {
+    var home = Quickshell.env("HOME")
+    if (home !== "") return home + "/.local/bin/omatalk"
+    return "omatalk"
+  }
 
   Component.onCompleted: {
     var s = Quickshell.env("SITE_BASE")
@@ -81,9 +86,9 @@ Panel {
   }
 
   function installOmatalk() {
-    var wrapped = "omarchy-launch-floating-terminal-with-presentation " + installLaunchCommand()
+    var wrapped = "omarchy-launch-floating-terminal-with-presentation " + shellQuote(installLaunchCommand())
     lastLaunchCommand = wrapped
-    if (bar && typeof bar.run === "function") bar.run(wrapped)
+    if (root.bar && typeof root.bar.run === "function") root.bar.run(wrapped)
   }
 
   function copyCurlInstall() {
@@ -94,6 +99,10 @@ Panel {
 
   function refresh() {
     if (!root.daemonInstalled) return
+    var bin = root.launcherPath
+    voicesProc.command = [bin, "config", "voices", "--json"]
+    getProc.command = [bin, "config", "get", "--json"]
+    versionProc.command = [bin, "version"]
     voicesProc.running = true
     getProc.running = true
     versionProc.running = true
@@ -104,18 +113,18 @@ Panel {
 
   function setVoice(value) {
     root.voice = value
-    setVoiceProc.command = ["omatalk", "config", "set", "voice", value]
+    setVoiceProc.command = [root.launcherPath, "config", "set", "voice", value]
     setVoiceProc.running = true
     // Not sequenced after setVoiceProc: the preview never touches
     // config.toml or waits on the Daemon's reload, so there is nothing to
     // wait for — it fires in parallel with the save.
-    previewProc.command = ["omatalk", "speak", "--voice", value, root.sampleTextFor(value)]
+    previewProc.command = [root.launcherPath, "speak", "--voice", value, root.sampleTextFor(value)]
     previewProc.running = true
   }
 
   function setSpeed(value) {
     root.speed = value
-    setSpeedProc.command = ["omatalk", "config", "set", "speed", String(value)]
+    setSpeedProc.command = [root.launcherPath, "config", "set", "speed", String(value)]
     setSpeedProc.running = true
   }
 

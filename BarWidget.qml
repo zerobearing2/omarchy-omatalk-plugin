@@ -15,14 +15,12 @@ BarWidget {
   property bool daemonInstalled: false
   readonly property string socketOverride: Quickshell.env("OMATALK_SOCKET")
   readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR")
-  readonly property string launcherOverride: Quickshell.env("OMATALK_LAUNCHER")
   readonly property string homeDir: Quickshell.env("HOME")
   readonly property bool speaking: daemonState === "speaking"
   readonly property bool daemonUnavailable: daemonInstalled && (
     daemonState === "error" || (connectionLost && !reconnectGrace.running)
   )
   readonly property string launcherPath: {
-    if (launcherOverride !== "") return launcherOverride
     if (homeDir !== "") return homeDir + "/.local/bin/omatalk"
     return ""
   }
@@ -65,6 +63,7 @@ BarWidget {
   readonly property var panelItem: panelLoader.item
 
   function open() {
+    if (!root.daemonInstalled) root.probeLauncher()
     if (panelLoader.item && panelLoader.item.open) panelLoader.item.open()
   }
 
