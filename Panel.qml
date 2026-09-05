@@ -315,7 +315,8 @@ Panel {
               text: "Models are about 185MB and the download can take a few minutes."
               color: Qt.darker(Color.popups.text, 1.3)
               font.family: Style.font.family
-              font.pixelSize: Style.font.bodySmall
+              font.pixelSize: Style.font.body
+              font.italic: false
             }
           }
 
