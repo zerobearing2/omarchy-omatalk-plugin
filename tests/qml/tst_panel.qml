@@ -44,30 +44,41 @@ TestCase {
     verify(!panel.isEnglishVoice("jf_alpha"))
   }
 
+  function assertPinnedInstall(command) {
+    verify(command.indexOf(panel.installerUrl) !== -1)
+    verify(command.indexOf(panel.installerSha256) !== -1)
+    verify(command.indexOf("sha256sum -c --strict") !== -1)
+    verify(command.indexOf("--proto") !== -1)
+    verify(command.indexOf("=https") !== -1)
+    verify(command.indexOf("--max-redirs 0") !== -1)
+    verify(command.indexOf("curl -fsS") !== -1)
+    verify(command.indexOf("| bash") === -1)
+    verify(command.indexOf("omatalk.zerobearing.com") === -1)
+    verify(command.indexOf("Continue? [y/N]") !== -1)
+    verify(command.indexOf("read -r -p") !== -1)
+  }
+
+  function test_installer_pin_is_raw_commit_and_digest() {
+    verify(/^https:\/\/raw\.githubusercontent\.com\/zerobearing2\/omatalk\/[0-9a-f]{40}\/install.sh$/.test(panel.installerUrl))
+    verify(/^[0-9a-f]{64}$/.test(panel.installerSha256))
+    assertPinnedInstall(panel.installCommand)
+  }
+
   function test_open_without_launcher_shows_setup_and_skips_config_cli() {
     compare(panel.daemonInstalled, false)
     verify(panel.showingSetup)
-    compare(Quickshell.env("SITE_BASE"), null)
-    compare(panel.siteBase, "https://omatalk.zerobearing.com")
-    compare(panel.curlInstall, "curl -fsSL https://omatalk.zerobearing.com/install.sh | bash")
+    assertPinnedInstall(panel.installCommand)
     panel.opened = true
     compare(findProc("omatalk version").running, false)
     compare(findProc("config get --json").running, false)
     compare(findProc("config voices --json").running, false)
   }
 
-  function test_install_launches_site_installer_in_floating_terminal() {
+  function test_install_launches_pinned_installer_in_floating_terminal() {
     panel.installOmatalk()
     verify(panel.lastLaunchCommand.indexOf("omarchy-launch-floating-terminal-with-presentation '") === 0)
-    verify(panel.lastLaunchCommand.indexOf("https://omatalk.zerobearing.com/install.sh") !== -1)
     verify(panel.lastLaunchCommand.indexOf("flock") !== -1)
-  }
-
-  function test_install_command_uses_site_base() {
-    panel.siteBase = "http://fixture.test"
-    panel.installOmatalk()
-    verify(panel.lastLaunchCommand.indexOf("http://fixture.test/install.sh") !== -1)
-    compare(panel.curlInstall, "curl -fsSL http://fixture.test/install.sh | bash")
+    assertPinnedInstall(panel.lastLaunchCommand)
   }
 
   function test_launcher_appearing_refreshes_config() {

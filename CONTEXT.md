@@ -28,8 +28,9 @@ _Avoid_: request, job, playback
 
 ## Panel states
 
-- Not installed: setup (Install runs the public site installer in Omarchy's
-  floating terminal). Plugin version from `manifest.json`. No `omatalk
-  config` / `version` / preview `speak`.
+- Not installed: setup (Install fetches a pinned `install.sh` from
+  zerobearing2/omatalk, verifies SHA-256, and runs it in Omarchy's floating
+  terminal). Plugin version from `manifest.json`. No `omatalk config` /
+  `version` / preview `speak`.
 - Installed: voice, speed, plugin version, Daemon version (`omatalk version`).
   Config CLI uses `~/.local/bin/omatalk`.

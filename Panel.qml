@@ -5,9 +5,9 @@ import qs.Commons
 import qs.Ui
 
 // Voice + speed config panel once the Daemon launcher exists. Until then
-// this is a setup screen: Install runs the public site installer in
-// Omarchy's floating terminal. Config CLI processes stay stopped while
-// ~/.local/bin/omatalk is missing.
+// this is a setup screen: Install fetches a pinned omatalk install.sh,
+// verifies SHA-256, and runs it in Omarchy's floating terminal. Config
+// CLI processes stay stopped while ~/.local/bin/omatalk is missing.
 Panel {
   id: root
   moduleName: "zerobearing.omatalk"
@@ -18,25 +18,22 @@ Panel {
   property string lastLaunchCommand: ""
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
-  property string siteBase: "https://omatalk.zerobearing.com"
   readonly property bool showingSetup: !daemonInstalled
+  // Pinned Daemon installer. `make pin` rewrites URL + sha256 together.
+  readonly property string installerUrl: "https://raw.githubusercontent.com/zerobearing2/omatalk/77ce604ac99ed3c54592ea3bed935940f41933f3/install.sh"
+  readonly property string installerSha256: "aa89363f42a99bf3e31e280a6fe5d5625125baa9719479a87bdac1e407613bee"
   property string launcherPath: {
     var home = root.envText("HOME")
     if (home !== "") return home + "/.local/bin/omatalk"
     return ""
   }
 
-  // Quickshell.env returns null when the variable is unset. String(null)
-  // is "null", which is how the setup curl became `curl ... null/install.sh`.
+  // Quickshell.env returns null when unset; String(null) is "null", which
+  // would make launcherPath and the install lock dir unusable.
   function envText(name) {
     var v = Quickshell.env(name)
     if (v === null || v === undefined) return ""
     return String(v)
-  }
-
-  Component.onCompleted: {
-    var s = root.envText("SITE_BASE")
-    if (s !== "") root.siteBase = s.replace(/\/+$/, "")
   }
 
   // PanelSlider only snaps `step` for wheel nudges — dragging reports
@@ -89,31 +86,33 @@ Panel {
     return runtime + "/omatalk"
   }
 
-  function curlPipe(url) {
-    return "curl -fsSL " + url + " | bash"
-  }
-
-  readonly property string curlInstall: curlPipe(siteBase + "/install.sh")
-
   function installInnerCommand() {
-    return curlPipe(siteBase + "/install.sh?ts=" + Date.now())
+    var dir = root.installLockDir()
+    return [
+      "set -euo pipefail",
+      "mkdir -p " + root.shellQuote(dir),
+      "printf '%s\\n' " + root.shellQuote("This will install the Omatalk daemon: a systemd --user service, a Python venv, and voice models (~185MB) under ~/.local/share/omatalk."),
+      "read -r -p " + root.shellQuote("Continue? [y/N] ") + " answer < /dev/tty",
+      "[[ ${answer:-} =~ ^[Yy]$ ]] || exit 0",
+      "tmp=$(mktemp " + root.shellQuote(dir + "/install.XXXXXX") + ")",
+      "trap 'rm -f \"$tmp\"' EXIT",
+      "curl -fsS --proto '=https' --tlsv1.2 --max-redirs 0 -o \"$tmp\" " + root.shellQuote(root.installerUrl),
+      "printf '%s  %s\\n' " + root.shellQuote(root.installerSha256) + " \"$tmp\" | sha256sum -c --strict",
+      "bash \"$tmp\""
+    ].join("\n")
   }
+
+  readonly property string installCommand: root.installInnerCommand()
 
   function installLaunchCommand() {
-    var dir = installLockDir()
-    return "mkdir -p " + dir + " && flock -n " + dir + "/install.lock bash -c " + shellQuote(installInnerCommand())
+    var dir = root.installLockDir()
+    return "mkdir -p " + root.shellQuote(dir) + " && flock -n " + root.shellQuote(dir + "/install.lock") + " bash -c " + root.shellQuote(root.installInnerCommand())
   }
 
   function installOmatalk() {
-    var wrapped = "omarchy-launch-floating-terminal-with-presentation " + shellQuote(installLaunchCommand())
+    var wrapped = "omarchy-launch-floating-terminal-with-presentation " + root.shellQuote(root.installLaunchCommand())
     lastLaunchCommand = wrapped
     if (root.bar && typeof root.bar.run === "function") root.bar.run(wrapped)
-  }
-
-  function copyCurlInstall() {
-    Quickshell.execDetached([
-      "bash", "-c", "printf %s " + shellQuote(curlInstall) + " | wl-copy"
-    ])
   }
 
   function refresh() {
@@ -280,45 +279,40 @@ Panel {
           width: parent.width
           spacing: Style.space(14)
 
-          Text {
-            objectName: "omatalkSetupNote"
+          Column {
             width: parent.width
-            wrapMode: Text.WordWrap
-            text: "Models are about 185MB and the download can take a few minutes."
-            color: Color.popups.text
-            font.family: Style.font.family
-            font.pixelSize: Style.font.body
+            spacing: Style.space(6)
+
+            Text {
+              objectName: "omatalkSetupNote"
+              width: parent.width
+              wrapMode: Text.WordWrap
+              text: "Omatalk is not installed. Click below to install it."
+              color: Color.popups.text
+              font.family: Style.font.family
+              font.pixelSize: Style.font.body
+            }
+
+            Text {
+              objectName: "omatalkSetupModelsNote"
+              width: parent.width
+              wrapMode: Text.WordWrap
+              text: "Models are about 185MB and the download can take a few minutes."
+              color: Qt.darker(Color.popups.text, 1.3)
+              font.family: Style.font.family
+              font.pixelSize: Style.font.body
+              font.italic: true
+            }
           }
 
-          Text {
+          Button {
             objectName: "omatalkInstallButton"
-            text: "Install Omatalk"
-            color: Color.popups.text
-            font.family: Style.font.family
-            font.pixelSize: Style.font.body
-            font.bold: true
-
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.installOmatalk()
-            }
-          }
-
-          Text {
-            objectName: "omatalkCurlLine"
             width: parent.width
-            wrapMode: Text.WrapAnywhere
-            text: root.curlInstall
-            color: Qt.darker(Color.popups.text, 1.3)
-            font.family: Style.font.family
-            font.pixelSize: Style.font.bodySmall
-
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.copyCurlInstall()
-            }
+            text: "Install Omatalk"
+            bordered: true
+            foreground: Color.popups.text
+            fontFamily: Style.font.family
+            onClicked: root.installOmatalk()
           }
         }
 

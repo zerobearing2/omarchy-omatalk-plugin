@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "zerobearing.omatalk",
   "name": "Omatalk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Zerobearing",
   "license": "MIT",
   "description": "Local text-to-speech: select text, press F8, the machine reads it back.",
