@@ -294,14 +294,29 @@ Panel {
           width: parent.width
           spacing: Style.space(14)
 
-          Text {
-            objectName: "omatalkSetupNote"
+          Column {
             width: parent.width
-            wrapMode: Text.WordWrap
-            text: "Models are about 185MB and the download can take a few minutes."
-            color: Color.popups.text
-            font.family: Style.font.family
-            font.pixelSize: Style.font.body
+            spacing: Style.space(6)
+
+            Text {
+              objectName: "omatalkSetupNote"
+              width: parent.width
+              wrapMode: Text.WordWrap
+              text: "Omatalk is not installed. Click below to install it."
+              color: Color.popups.text
+              font.family: Style.font.family
+              font.pixelSize: Style.font.body
+            }
+
+            Text {
+              objectName: "omatalkSetupModelsNote"
+              width: parent.width
+              wrapMode: Text.WordWrap
+              text: "Models are about 185MB and the download can take a few minutes."
+              color: Qt.darker(Color.popups.text, 1.3)
+              font.family: Style.font.family
+              font.pixelSize: Style.font.bodySmall
+            }
           }
 
           Button {
