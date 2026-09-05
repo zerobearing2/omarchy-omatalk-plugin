@@ -8,18 +8,22 @@ PANEL="$ROOT/Panel.qml"
 REPO="${OMATALK_REPO:-zerobearing2/omatalk}"
 REF="${1:-}"
 
-if ! command -v gh >/dev/null 2>&1; then
-  echo "gh is required to resolve omatalk tags" >&2
-  exit 1
-fi
 if [[ ! -f $PANEL ]]; then
   echo "missing $PANEL" >&2
   exit 1
 fi
 
+require_gh() {
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "gh is required to resolve omatalk tags" >&2
+    exit 1
+  fi
+}
+
 resolve_tag_commit() {
   local tag=$1
   local sha type
+  require_gh
   sha=$(gh api "repos/$REPO/git/ref/tags/$tag" --jq .object.sha)
   type=$(gh api "repos/$REPO/git/ref/tags/$tag" --jq .object.type)
   if [[ $type == tag ]]; then
@@ -30,6 +34,7 @@ resolve_tag_commit() {
 }
 
 if [[ -z $REF ]]; then
+  require_gh
   REF=$(gh release view --repo "$REPO" --json tagName --jq .tagName)
 fi
 

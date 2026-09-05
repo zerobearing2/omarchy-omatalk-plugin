@@ -29,8 +29,8 @@ Panel {
     return ""
   }
 
-  // Quickshell.env returns null when the variable is unset. String(null)
-  // is "null", which is how an earlier setup curl became `... null/install.sh`.
+  // Quickshell.env returns null when unset; String(null) is "null", which
+  // would make launcherPath and the install lock dir unusable.
   function envText(name) {
     var v = Quickshell.env(name)
     if (v === null || v === undefined) return ""
