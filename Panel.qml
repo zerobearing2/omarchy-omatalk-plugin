@@ -293,19 +293,14 @@ Panel {
             font.pixelSize: Style.font.body
           }
 
-          Text {
+          Button {
             objectName: "omatalkInstallButton"
+            width: parent.width
             text: "Install Omatalk"
-            color: Color.popups.text
-            font.family: Style.font.family
-            font.pixelSize: Style.font.body
-            font.bold: true
-
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.installOmatalk()
-            }
+            bordered: true
+            foreground: Color.popups.text
+            fontFamily: Style.font.family
+            onClicked: root.installOmatalk()
           }
 
           Text {
