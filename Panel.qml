@@ -316,7 +316,7 @@ Panel {
               color: Qt.darker(Color.popups.text, 1.3)
               font.family: Style.font.family
               font.pixelSize: Style.font.body
-              font.italic: false
+              font.italic: true
             }
           }
 
