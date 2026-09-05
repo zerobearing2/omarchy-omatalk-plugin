@@ -309,11 +309,9 @@ Panel {
           }
 
           Text {
-            objectName: "omatalkInstallCommand"
-            width: parent.width
-            wrapMode: Text.WrapAnywhere
-            text: root.installCommand
-            color: Qt.darker(Color.popups.text, 1.3)
+            objectName: "omatalkCopyCommand"
+            text: "Copy command"
+            color: Qt.darker(Color.popups.text, 1.6)
             font.family: Style.font.family
             font.pixelSize: Style.font.bodySmall
 
