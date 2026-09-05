@@ -15,9 +15,11 @@ make test
 
 ## Installer pin
 
-Panel Install runs `install.sh` from a pinned `zerobearing2/omatalk` commit.
-The pin is `installerUrl` and `installerSha256` in `Panel.qml`. A new omatalk
-release does not change what this panel installs until we re-pin.
+Panel Install fetches, hashes, and runs `install.sh` from a pinned
+`zerobearing2/omatalk` commit (`installerUrl` + `installerSha256` in
+`Panel.qml`). That script still installs the current GitHub release tarball.
+Re-pin when `install.sh` itself changes (`make pin-release`), not merely
+because omatalk shipped a new release.
 
 ```sh
 make pin                 # latest omatalk GitHub release
