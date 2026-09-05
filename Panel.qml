@@ -15,6 +15,7 @@ Panel {
   property var anchorItem: null
   property bool daemonUnavailable: false
   property bool daemonInstalled: false
+  property bool installConfirmOpen: false
   property string lastLaunchCommand: ""
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
@@ -107,16 +108,23 @@ Panel {
     return "mkdir -p " + root.shellQuote(dir) + " && flock -n " + root.shellQuote(dir + "/install.lock") + " bash -c " + root.shellQuote(root.installInnerCommand())
   }
 
+  function requestInstall() {
+    root.installConfirmOpen = true
+  }
+
+  function cancelInstall() {
+    root.installConfirmOpen = false
+  }
+
+  function confirmInstall() {
+    root.installConfirmOpen = false
+    root.installOmatalk()
+  }
+
   function installOmatalk() {
     var wrapped = "omarchy-launch-floating-terminal-with-presentation " + root.shellQuote(root.installLaunchCommand())
     lastLaunchCommand = wrapped
     if (root.bar && typeof root.bar.run === "function") root.bar.run(wrapped)
-  }
-
-  function copyInstallCommand() {
-    Quickshell.execDetached([
-      "bash", "-c", "printf %s " + root.shellQuote(root.installCommand) + " | wl-copy"
-    ])
   }
 
   function refresh() {
@@ -131,7 +139,10 @@ Panel {
   }
 
   onOpenedChanged: if (opened && root.daemonInstalled) refresh()
-  onDaemonInstalledChanged: if (opened && root.daemonInstalled) refresh()
+  onDaemonInstalledChanged: {
+    if (root.daemonInstalled) root.installConfirmOpen = false
+    if (opened && root.daemonInstalled) refresh()
+  }
 
   function setVoice(value) {
     root.voice = value
@@ -295,25 +306,53 @@ Panel {
 
           Button {
             objectName: "omatalkInstallButton"
+            visible: !root.installConfirmOpen
             width: parent.width
             text: "Install Omatalk"
             bordered: true
             foreground: Color.popups.text
             fontFamily: Style.font.family
-            onClicked: root.installOmatalk()
+            onClicked: root.requestInstall()
           }
 
-          Text {
-            objectName: "omatalkCopyCommand"
-            text: "Copy command"
-            color: Qt.darker(Color.popups.text, 1.6)
-            font.family: Style.font.family
-            font.pixelSize: Style.font.bodySmall
+          Column {
+            objectName: "omatalkInstallConfirm"
+            visible: root.installConfirmOpen
+            width: parent.width
+            spacing: Style.space(14)
 
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.copyInstallCommand()
+            Text {
+              width: parent.width
+              wrapMode: Text.WordWrap
+              text: "A terminal will open so you can watch the install or close it to cancel."
+              color: Color.popups.text
+              font.family: Style.font.family
+              font.pixelSize: Style.font.body
+            }
+
+            Row {
+              width: parent.width
+              spacing: Style.space(8)
+
+              Button {
+                objectName: "omatalkInstallCancel"
+                width: (parent.width - parent.spacing) / 2
+                text: "Cancel"
+                bordered: true
+                foreground: Color.popups.text
+                fontFamily: Style.font.family
+                onClicked: root.cancelInstall()
+              }
+
+              Button {
+                objectName: "omatalkInstallConfirmButton"
+                width: (parent.width - parent.spacing) / 2
+                text: "Install"
+                bordered: true
+                foreground: Color.popups.text
+                fontFamily: Style.font.family
+                onClicked: root.confirmInstall()
+              }
             }
           }
         }

@@ -72,8 +72,21 @@ TestCase {
     compare(findProc("config voices --json").running, false)
   }
 
+  function test_install_asks_before_launching() {
+    compare(panel.installConfirmOpen, false)
+    compare(panel.lastLaunchCommand, "")
+    panel.requestInstall()
+    compare(panel.installConfirmOpen, true)
+    compare(panel.lastLaunchCommand, "")
+    panel.cancelInstall()
+    compare(panel.installConfirmOpen, false)
+    compare(panel.lastLaunchCommand, "")
+  }
+
   function test_install_launches_pinned_installer_in_floating_terminal() {
-    panel.installOmatalk()
+    panel.requestInstall()
+    panel.confirmInstall()
+    compare(panel.installConfirmOpen, false)
     verify(panel.lastLaunchCommand.indexOf("omarchy-launch-floating-terminal-with-presentation '") === 0)
     verify(panel.lastLaunchCommand.indexOf("flock") !== -1)
     assertPinnedInstall(panel.lastLaunchCommand)
