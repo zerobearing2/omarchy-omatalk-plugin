@@ -13,10 +13,26 @@ make test
 `omarchy plugin validate .` must pass on this checkout. QML tests need
 `qmltestrunner` (skipped with a note when it is not installed; required in CI).
 
+## Installer pin
+
+Panel Install runs `install.sh` from a pinned `zerobearing2/omatalk` commit.
+The pin is `installerUrl` and `installerSha256` in `Panel.qml`. A new omatalk
+release does not change what this panel installs until we re-pin.
+
+```sh
+make pin                 # latest omatalk GitHub release
+make pin REF=v0.3.1      # that tag, or a 40-character commit
+make pin-release         # pin + plugin version bump, one commit
+```
+
+Push, then `make release`. Keep `install.sh` in the Daemon repo, not here.
+
 ## Release
 
 Version is `manifest.json`. `make bump` (or `make bump VERSION=x.y.z`) commits
-it; push, then `make release` to run tests and cut the GitHub release.
+it; push, then `make release` to run tests and cut the GitHub release. When
+the change is a newer Daemon installer, `make pin-release` instead of bump
+alone.
 
 ## Agent skills
 

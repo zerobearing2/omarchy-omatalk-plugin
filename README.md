@@ -25,8 +25,9 @@ omarchy plugin add https://github.com/zerobearing2/omarchy-omatalk-plugin.git --
 ```
 
 If the Daemon is not installed, click the megaphone and choose Install Omatalk.
-That runs the public installer from https://omatalk.zerobearing.com in Omarchy's
-floating terminal. Models are about 185MB.
+That fetches a pinned `install.sh` from
+[zerobearing2/omatalk](https://github.com/zerobearing2/omatalk), checks its
+SHA-256, and runs it in Omarchy's floating terminal. Models are about 185MB.
 
 If the megaphone is missing or the panel still looks like an older checkout,
 reload the bar:
@@ -89,6 +90,7 @@ Daemon version (`omatalk version`).
 ```sh
 make bump              # patch + 1 and commit
 make bump VERSION=1.2.0
+make pin-release       # re-pin omatalk install.sh, bump, one commit
 git push
 make release           # tests must pass; then cuts the GitHub release
 ```
