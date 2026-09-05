@@ -15,7 +15,6 @@ Panel {
   property var anchorItem: null
   property bool daemonUnavailable: false
   property bool daemonInstalled: false
-  property bool installConfirmOpen: false
   property string lastLaunchCommand: ""
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
@@ -93,6 +92,9 @@ Panel {
     return [
       "set -euo pipefail",
       "mkdir -p " + root.shellQuote(dir),
+      "printf '%s\\n' " + root.shellQuote("This will install the Omatalk daemon: a systemd --user service, a Python venv, and voice models (~185MB) under ~/.local/share/omatalk."),
+      "read -r -p " + root.shellQuote("Continue? [y/N] ") + " answer < /dev/tty",
+      "[[ ${answer:-} =~ ^[Yy]$ ]] || exit 0",
       "tmp=$(mktemp " + root.shellQuote(dir + "/install.XXXXXX") + ")",
       "trap 'rm -f \"$tmp\"' EXIT",
       "curl -fsS --proto '=https' --tlsv1.2 --max-redirs 0 -o \"$tmp\" " + root.shellQuote(root.installerUrl),
@@ -106,19 +108,6 @@ Panel {
   function installLaunchCommand() {
     var dir = root.installLockDir()
     return "mkdir -p " + root.shellQuote(dir) + " && flock -n " + root.shellQuote(dir + "/install.lock") + " bash -c " + root.shellQuote(root.installInnerCommand())
-  }
-
-  function requestInstall() {
-    root.installConfirmOpen = true
-  }
-
-  function cancelInstall() {
-    root.installConfirmOpen = false
-  }
-
-  function confirmInstall() {
-    root.installConfirmOpen = false
-    root.installOmatalk()
   }
 
   function installOmatalk() {
@@ -139,10 +128,7 @@ Panel {
   }
 
   onOpenedChanged: if (opened && root.daemonInstalled) refresh()
-  onDaemonInstalledChanged: {
-    if (root.daemonInstalled) root.installConfirmOpen = false
-    if (opened && root.daemonInstalled) refresh()
-  }
+  onDaemonInstalledChanged: if (opened && root.daemonInstalled) refresh()
 
   function setVoice(value) {
     root.voice = value
@@ -322,54 +308,12 @@ Panel {
 
           Button {
             objectName: "omatalkInstallButton"
-            visible: !root.installConfirmOpen
             width: parent.width
             text: "Install Omatalk"
             bordered: true
             foreground: Color.popups.text
             fontFamily: Style.font.family
-            onClicked: root.requestInstall()
-          }
-
-          Column {
-            objectName: "omatalkInstallConfirm"
-            visible: root.installConfirmOpen
-            width: parent.width
-            spacing: Style.space(14)
-
-            Text {
-              width: parent.width
-              wrapMode: Text.WordWrap
-              text: "A terminal will open so you can watch the install or close it to cancel."
-              color: Color.popups.text
-              font.family: Style.font.family
-              font.pixelSize: Style.font.body
-            }
-
-            Row {
-              width: parent.width
-              spacing: Style.space(8)
-
-              Button {
-                objectName: "omatalkInstallCancel"
-                width: (parent.width - parent.spacing) / 2
-                text: "Cancel"
-                bordered: true
-                foreground: Color.popups.text
-                fontFamily: Style.font.family
-                onClicked: root.cancelInstall()
-              }
-
-              Button {
-                objectName: "omatalkInstallConfirmButton"
-                width: (parent.width - parent.spacing) / 2
-                text: "Install"
-                bordered: true
-                foreground: Color.popups.text
-                fontFamily: Style.font.family
-                onClicked: root.confirmInstall()
-              }
-            }
+            onClicked: root.installOmatalk()
           }
         }
 
