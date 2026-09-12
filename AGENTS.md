@@ -34,9 +34,16 @@ Push, then `make release`. Keep `install.sh` in the Daemon repo, not here.
 Version is `manifest.json`. `make bump` (or `make bump VERSION=x.y.z`) commits
 it; push, then `make release` to run tests and cut the GitHub release. When
 the change is a newer Daemon installer, `make pin-release` instead of bump
-alone.
+alone. After that GitHub release, update the marketplace listing
+(`docs/agents/marketplace.md`).
 
 ## Agent skills
+
+### Marketplace listing
+
+Until listed, re-validate by editing omacom/omarchy-plugin-marketplace#4712.
+After listing, each release files a `[Verify]:` issue for HEAD. See
+`docs/agents/marketplace.md`.
 
 ### Issue tracker
 
