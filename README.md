@@ -82,12 +82,14 @@ submodule. Default branch is `master`. Releases are cut from that repo:
 
 ```sh
 make plugin-bump
+git -C plugin switch master
 make plugin-release
 ```
 
 That copies the current Daemon `install.sh`, runs tests, commits, pushes,
 and creates the GitHub release. Same shape as Daemon `make bump` /
-`make release`.
+`make release`. Plugin release requires `plugin/` on `master` and a
+published Daemon GitHub release for the copied `RELEASE_TAG`.
 
 ```sh
 ./tests/run.sh
