@@ -11,8 +11,16 @@ for f in manifest.json BarWidget.qml Panel.qml README.md LICENSE preview.png; do
   fi
 done
 
-if [[ -e install.sh || -e uninstall.sh ]]; then
-  echo "install/uninstall scripts must not live in the plugin tree" >&2
+if [[ ! -f install.sh ]]; then
+  echo "plugin tree must ship install.sh (copy of omatalk's, via make release)" >&2
+  exit 1
+fi
+if ! head -n1 install.sh | grep -qx '#!/usr/bin/env bash'; then
+  echo "plugin install.sh is not a bash script" >&2
+  exit 1
+fi
+if [[ -e uninstall.sh ]]; then
+  echo "uninstall.sh must not live in the plugin tree" >&2
   exit 1
 fi
 

@@ -44,41 +44,39 @@ TestCase {
     verify(!panel.isEnglishVoice("jf_alpha"))
   }
 
-  function assertPinnedInstall(command) {
-    verify(command.indexOf(panel.installerUrl) !== -1)
-    verify(command.indexOf(panel.installerSha256) !== -1)
-    verify(command.indexOf("sha256sum -c --strict") !== -1)
-    verify(command.indexOf("--proto") !== -1)
-    verify(command.indexOf("=https") !== -1)
-    verify(command.indexOf("--max-redirs 0") !== -1)
-    verify(command.indexOf("curl -fsS") !== -1)
+  function assertBundledInstall(command) {
+    verify(command.indexOf(panel.installerPath) !== -1)
+    verify(command.indexOf("bash ") !== -1)
     verify(command.indexOf("| bash") === -1)
+    verify(command.indexOf("curl") === -1)
+    verify(command.indexOf("raw.githubusercontent.com") === -1)
     verify(command.indexOf("omatalk.zerobearing.com") === -1)
     verify(command.indexOf("Continue? [y/N]") !== -1)
     verify(command.indexOf("read -r -p") !== -1)
+    verify(command.indexOf("missing install.sh") !== -1)
   }
 
-  function test_installer_pin_is_raw_commit_and_digest() {
-    verify(/^https:\/\/raw\.githubusercontent\.com\/zerobearing2\/omatalk\/[0-9a-f]{40}\/install.sh$/.test(panel.installerUrl))
-    verify(/^[0-9a-f]{64}$/.test(panel.installerSha256))
-    assertPinnedInstall(panel.installCommand)
+  function test_installer_is_bundled_script() {
+    verify(panel.installerPath.indexOf("install.sh") !== -1)
+    verify(panel.installerPath.indexOf("http") === -1)
+    assertBundledInstall(panel.installCommand)
   }
 
   function test_open_without_launcher_shows_setup_and_skips_config_cli() {
     compare(panel.daemonInstalled, false)
     verify(panel.showingSetup)
-    assertPinnedInstall(panel.installCommand)
+    assertBundledInstall(panel.installCommand)
     panel.opened = true
     compare(findProc("omatalk version").running, false)
     compare(findProc("config get --json").running, false)
     compare(findProc("config voices --json").running, false)
   }
 
-  function test_install_launches_pinned_installer_in_floating_terminal() {
+  function test_install_launches_bundled_installer_in_floating_terminal() {
     panel.installOmatalk()
     verify(panel.lastLaunchCommand.indexOf("omarchy-launch-floating-terminal-with-presentation '") === 0)
     verify(panel.lastLaunchCommand.indexOf("flock") !== -1)
-    assertPinnedInstall(panel.lastLaunchCommand)
+    assertBundledInstall(panel.lastLaunchCommand)
   }
 
   function test_launcher_appearing_refreshes_config() {

@@ -25,9 +25,9 @@ omarchy plugin add https://github.com/zerobearing2/omarchy-omatalk-plugin.git --
 ```
 
 If the Daemon is not installed, click the megaphone and choose Install Omatalk.
-That fetches a pinned `install.sh` from
-[zerobearing2/omatalk](https://github.com/zerobearing2/omatalk), checks its
-SHA-256, and runs it in Omarchy's floating terminal. Models are about 185MB.
+That runs the `install.sh` shipped in this checkout (a copy of the script in
+[zerobearing2/omatalk](https://github.com/zerobearing2/omatalk)) in Omarchy's
+floating terminal. Models are about 185MB.
 
 If the megaphone is missing or the panel still looks like an older checkout,
 reload the bar:
