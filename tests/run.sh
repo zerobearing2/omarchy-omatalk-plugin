@@ -16,6 +16,17 @@ if [[ -e install.sh || -e uninstall.sh ]]; then
   exit 1
 fi
 
+for f in AGENTS.md CONTEXT.md CLAUDE.md; do
+  if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+    echo "agent-control file must not be tracked: $f" >&2
+    exit 1
+  fi
+done
+if git ls-files | grep -E '^(docs/agents/|\.grok/)'; then
+  echo "agent-control paths must not be in the plugin git tree" >&2
+  exit 1
+fi
+
 link=$(find . -name .git -prune -o -type l -print -quit)
 if [[ -n $link ]]; then
   echo "symlinks are not allowed in the plugin tree: $link" >&2
