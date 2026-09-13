@@ -11,8 +11,36 @@ for f in manifest.json BarWidget.qml Panel.qml README.md LICENSE preview.png; do
   fi
 done
 
-if [[ -e install.sh || -e uninstall.sh ]]; then
-  echo "install/uninstall scripts must not live in the plugin tree" >&2
+if [[ ! -f install.sh ]]; then
+  echo "plugin tree must ship install.sh (copy of omatalk's install.sh)" >&2
+  exit 1
+fi
+if ! head -n1 install.sh | grep -qx '#!/usr/bin/env bash'; then
+  echo "plugin install.sh is not a bash script" >&2
+  exit 1
+fi
+if grep -q 'releases/latest' install.sh; then
+  echo "plugin install.sh must not use releases/latest" >&2
+  exit 1
+fi
+if grep -q OMATALK_REF install.sh; then
+  echo "plugin install.sh must not set OMATALK_REF" >&2
+  exit 1
+fi
+if ! grep -Eq '^RELEASE_TAG="\$\{RELEASE_TAG:-v[0-9]+\.[0-9]+\.[0-9]+\}"$' install.sh; then
+  echo "plugin install.sh RELEASE_TAG must default to vX.Y.Z" >&2
+  exit 1
+fi
+if ! grep -Eq '^TARBALL_SHA256="\$\{TARBALL_SHA256:-[0-9a-f]{64}\}"$' install.sh; then
+  echo "plugin install.sh TARBALL_SHA256 must default to a 64-hex digest" >&2
+  exit 1
+fi
+if ! grep -Fq 'RELEASE_BASE="${RELEASE_BASE:-https://github.com/zerobearing2/omatalk/releases/download/${RELEASE_TAG}}"' install.sh; then
+  echo "plugin install.sh RELEASE_BASE must be releases/download/\${RELEASE_TAG}" >&2
+  exit 1
+fi
+if [[ -e uninstall.sh ]]; then
+  echo "uninstall.sh must not live in the plugin tree" >&2
   exit 1
 fi
 
