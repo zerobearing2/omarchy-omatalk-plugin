@@ -12,7 +12,7 @@ for f in manifest.json BarWidget.qml Panel.qml README.md LICENSE preview.png; do
 done
 
 if [[ ! -f install.sh ]]; then
-  echo "plugin tree must ship install.sh (copy of omatalk's, via make release)" >&2
+  echo "plugin tree must ship install.sh (copy of omatalk's, via make pin-release)" >&2
   exit 1
 fi
 if ! head -n1 install.sh | grep -qx '#!/usr/bin/env bash'; then
