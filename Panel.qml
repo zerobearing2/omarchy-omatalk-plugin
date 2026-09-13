@@ -19,7 +19,7 @@ Panel {
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
   readonly property bool showingSetup: !daemonInstalled
-  // Pinned Daemon installer. `make pin` rewrites URL + sha256 together.
+  // Pinned Daemon installer. Workspace `make pin` rewrites URL + sha256.
   readonly property string installerUrl: "https://raw.githubusercontent.com/zerobearing2/omatalk/830e45dd18c29e9ea5f358bea432fcadba40af53/install.sh"
   readonly property string installerSha256: "aa89363f42a99bf3e31e280a6fe5d5625125baa9719479a87bdac1e407613bee"
   property string launcherPath: {

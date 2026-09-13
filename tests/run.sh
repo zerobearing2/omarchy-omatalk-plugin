@@ -16,14 +16,14 @@ if [[ -e install.sh || -e uninstall.sh ]]; then
   exit 1
 fi
 
-for f in AGENTS.md CONTEXT.md CLAUDE.md; do
+for f in AGENTS.md CONTEXT.md CLAUDE.md Makefile; do
   if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
-    echo "agent-control file must not be tracked: $f" >&2
+    echo "workspace-only file must not be tracked: $f" >&2
     exit 1
   fi
 done
-if git ls-files | grep -E '^(docs/agents/|\.grok/)'; then
-  echo "agent-control paths must not be in the plugin git tree" >&2
+if git ls-files | grep -E '^(docs/agents/|\.grok/|scripts/)'; then
+  echo "workspace-only paths must not be in the plugin git tree" >&2
   exit 1
 fi
 

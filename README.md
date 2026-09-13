@@ -78,7 +78,7 @@ This repository is the plugin. The Daemon, CLI, and site live in
 https://github.com/zerobearing2/omatalk. Default branch is `master`.
 
 ```sh
-make test
+./tests/run.sh
 ```
 
 `omarchy plugin add` clones this whole git tree, including tests. The shell
@@ -86,11 +86,3 @@ only loads the QML entry points in `manifest.json`.
 
 Version lives in `manifest.json`. The panel shows it next to the installed
 Daemon version (`omatalk version`).
-
-```sh
-make bump              # patch + 1 and commit
-make bump VERSION=1.2.0
-make pin-release       # re-pin omatalk install.sh, bump, one commit
-git push
-make release           # tests must pass; then cuts the GitHub release
-```
