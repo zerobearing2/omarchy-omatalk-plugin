@@ -20,7 +20,7 @@ for f in install.sh uninstall.sh; do
   fi
 done
 
-for f in AGENTS.md CONTEXT.md CLAUDE.md Makefile; do
+for f in AGENTS.md CONTEXT.md CLAUDE.md; do
   if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
     echo "workspace-only file must not be tracked: $f" >&2
     exit 1

@@ -81,19 +81,14 @@ line to `~/.config/hypr/bindings.lua`, and uninstall asks before removing it.
 
 This repository is the plugin. The Daemon, CLI, and site live in
 https://github.com/zerobearing2/omatalk and release on their own. Default
-branch is `master`. To release, bump `version` in `manifest.json`, then:
+branch is `master`. Release has the same shape as the Daemon:
 
 ```sh
-git commit -am "Release vX.Y.Z"
-git push
-gh release create vX.Y.Z --generate-notes
+make bump                 # manifest.json only; VERSION=x.y.z to set it
+make release              # master only; test, validate, commit, push, gh
 ```
 
-CI runs the tests on push:
-
-```sh
-./tests/run.sh
-```
+`make test` runs `tests/run.sh`. CI also runs it on push.
 
 `omarchy plugin add` clones this whole git tree, including tests. The shell
 only loads the QML entry points in `manifest.json`.
