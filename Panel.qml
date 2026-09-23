@@ -265,14 +265,41 @@ Panel {
               font.pixelSize: Style.font.body
             }
 
-            Text {
-              objectName: "omatalkInstallCommand"
+            // Terminal-style block so the command reads as something to run.
+            Rectangle {
               width: parent.width
-              wrapMode: Text.WrapAnywhere
-              text: root.installCommand
-              color: Color.popups.text
-              font.family: Style.font.family
-              font.pixelSize: Style.font.bodySmall
+              height: commandRow.implicitHeight + Style.space(16)
+              color: Qt.darker(Color.popups.background, 1.5)
+              border.color: Color.popups.border
+              border.width: 1
+              radius: Style.space(4)
+
+              Row {
+                id: commandRow
+                x: Style.space(10)
+                y: Style.space(8)
+                width: parent.width - Style.space(20)
+                spacing: Style.space(8)
+
+                Text {
+                  id: commandPrompt
+                  text: "$"
+                  color: Color.accent
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+
+                Text {
+                  objectName: "omatalkInstallCommand"
+                  width: parent.width - commandPrompt.width - parent.spacing
+                  wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                  text: root.installCommand
+                  color: Color.popups.text
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.body
+                }
+              }
             }
 
             Text {
