@@ -24,12 +24,9 @@ parent it.
 omarchy plugin add https://github.com/zerobearing2/omarchy-omatalk-plugin.git --enable
 ```
 
-Then install the Daemon from a terminal. The panel shows this command, with
-a copy button, until the Daemon is installed:
-
-```sh
-curl -fsSL https://omatalk.zerobearing.com/install.sh | bash
-```
+Then install the Daemon from a terminal, following
+https://omatalk.zerobearing.com/#install. Until it is installed, the panel
+shows the same command with a copy button.
 
 The plugin never downloads or runs an installer itself. Later Daemon updates
 are `omatalk upgrade`. Models are about 185MB.

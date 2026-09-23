@@ -37,8 +37,6 @@ if [ -n "$unexpected" ]; then
   exit 1
 fi
 
-git fetch origin master --tags
-
 version="$(sed -n 's/^  "version": "\(.*\)",$/\1/p' manifest.json)"
 if [ -z "$version" ]; then
   echo "could not read version from manifest.json" >&2
@@ -52,7 +50,14 @@ if [ -n "$remote_tag" ]; then
   exit 1
 fi
 
-if [ "$(git merge-base HEAD origin/master)" != "$(git rev-parse origin/master)" ]; then
+# No fetch: origin's master must already be in local history.
+remote_head="$(git ls-remote origin refs/heads/master)"
+remote_head="${remote_head%%[[:space:]]*}"
+if [ -z "$remote_head" ]; then
+  echo "could not read origin master" >&2
+  exit 1
+fi
+if ! git merge-base --is-ancestor "$remote_head" HEAD 2>/dev/null; then
   echo "master is behind origin; pull first" >&2
   exit 1
 fi
