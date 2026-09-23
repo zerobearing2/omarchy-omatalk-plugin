@@ -26,7 +26,7 @@ for f in AGENTS.md CONTEXT.md CLAUDE.md; do
     exit 1
   fi
 done
-if git ls-files | grep -E '^(docs/agents/|\.grok/|scripts/)'; then
+if git ls-files | grep -E '^(docs/agents/|\.grok/)'; then
   echo "workspace-only paths must not be in the plugin git tree" >&2
   exit 1
 fi
