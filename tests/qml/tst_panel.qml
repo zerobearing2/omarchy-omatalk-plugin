@@ -44,39 +44,34 @@ TestCase {
     verify(!panel.isEnglishVoice("jf_alpha"))
   }
 
-  function assertBundledInstall(command) {
-    verify(command.indexOf(panel.installerPath) !== -1)
-    verify(command.indexOf("bash ") !== -1)
-    verify(command.indexOf("| bash") === -1)
-    verify(command.indexOf("curl") === -1)
-    verify(command.indexOf("raw.githubusercontent.com") === -1)
-    verify(command.indexOf("omatalk.zerobearing.com") === -1)
-    verify(command.indexOf("Continue? [y/N]") !== -1)
-    verify(command.indexOf("read -r -p") !== -1)
-    verify(command.indexOf("missing install.sh") !== -1)
-  }
-
-  function test_installer_is_bundled_script() {
-    verify(panel.installerPath.indexOf("install.sh") !== -1)
-    verify(panel.installerPath.indexOf("http") === -1)
-    assertBundledInstall(panel.installCommand)
+  function test_setup_shows_the_site_install_command() {
+    compare(panel.installCommand, "curl -fsSL https://omatalk.zerobearing.com/install.sh | bash")
+    verify(panel.showingSetup)
   }
 
   function test_open_without_launcher_shows_setup_and_skips_config_cli() {
     compare(panel.daemonInstalled, false)
     verify(panel.showingSetup)
-    assertBundledInstall(panel.installCommand)
     panel.opened = true
     compare(findProc("omatalk version").running, false)
     compare(findProc("config get --json").running, false)
     compare(findProc("config voices --json").running, false)
   }
 
-  function test_install_launches_bundled_installer_in_floating_terminal() {
-    panel.installOmatalk()
-    verify(panel.lastLaunchCommand.indexOf("omarchy-launch-floating-terminal-with-presentation '") === 0)
-    verify(panel.lastLaunchCommand.indexOf("flock") !== -1)
-    assertBundledInstall(panel.lastLaunchCommand)
+  function test_copy_puts_install_command_on_clipboard() {
+    compare(panel.installCommandCopied, false)
+    panel.copyInstallCommand()
+    var copy = findProc("wl-copy")
+    verify(copy.running)
+    compare(copy.command[1], panel.installCommand)
+    copy.complete(0, "", "")
+    verify(panel.installCommandCopied)
+  }
+
+  function test_failed_copy_is_not_reported_as_copied() {
+    panel.copyInstallCommand()
+    findProc("wl-copy").complete(1, "", "no display")
+    compare(panel.installCommandCopied, false)
   }
 
   function test_launcher_appearing_refreshes_config() {

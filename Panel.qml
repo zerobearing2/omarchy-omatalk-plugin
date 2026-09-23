@@ -5,9 +5,9 @@ import qs.Commons
 import qs.Ui
 
 // Voice + speed config panel once the Daemon launcher exists. Until then
-// this is a setup screen: Install runs the install.sh shipped in this
-// checkout, in Omarchy's floating terminal. Config CLI processes stay
-// stopped while ~/.local/bin/omatalk is missing.
+// this is a setup screen showing the site install command to paste into a
+// terminal; the plugin itself never downloads or runs an installer. Config
+// CLI processes stay stopped while ~/.local/bin/omatalk is missing.
 Panel {
   id: root
   moduleName: "zerobearing.omatalk"
@@ -15,7 +15,8 @@ Panel {
   property var anchorItem: null
   property bool daemonUnavailable: false
   property bool daemonInstalled: false
-  property string lastLaunchCommand: ""
+  property bool installCommandCopied: false
+  readonly property string installCommand: "curl -fsSL https://omatalk.zerobearing.com/install.sh | bash"
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
   readonly property bool showingSetup: !daemonInstalled
@@ -26,7 +27,7 @@ Panel {
   }
 
   // Quickshell.env returns null when unset; String(null) is "null", which
-  // would make launcherPath and the install lock dir unusable.
+  // would make launcherPath unusable.
   function envText(name) {
     var v = Quickshell.env(name)
     if (v === null || v === undefined) return ""
@@ -73,50 +74,16 @@ Panel {
     return "Hi, I'm " + stripped + ". This is what I sound like."
   }
 
-  function shellQuote(value) {
-    return "'" + String(value).replace(/'/g, "'\\''") + "'"
-  }
-
-  // Panel.qml and install.sh live in the plugin root (store clone or this checkout).
+  // manifest.json lives in the plugin root (store clone or this checkout).
   function pluginFile(name) {
     var url = String(Qt.resolvedUrl(name))
     if (url.indexOf("file://") === 0) return url.slice(7)
     return url
   }
 
-  readonly property string installerPath: root.pluginFile("install.sh")
-
-  function installLockDir() {
-    var runtime = root.envText("XDG_RUNTIME_DIR")
-    if (runtime === "") runtime = "/tmp"
-    return runtime + "/omatalk"
-  }
-
-  function installInnerCommand() {
-    var dir = root.installLockDir()
-    var script = root.installerPath
-    return [
-      "set -euo pipefail",
-      "mkdir -p " + root.shellQuote(dir),
-      "printf '%s\\n' " + root.shellQuote("This will install the Omatalk daemon: a systemd --user service, a Python venv, and voice models (~185MB) under ~/.local/share/omatalk."),
-      "read -r -p " + root.shellQuote("Continue? [y/N] ") + " answer < /dev/tty",
-      "[[ ${answer:-} =~ ^[Yy]$ ]] || exit 0",
-      "test -f " + root.shellQuote(script) + " || { echo 'missing install.sh in this plugin checkout' >&2; exit 1; }",
-      "bash " + root.shellQuote(script)
-    ].join("\n")
-  }
-
-  readonly property string installCommand: root.installInnerCommand()
-
-  function installLaunchCommand() {
-    var dir = root.installLockDir()
-    return "mkdir -p " + root.shellQuote(dir) + " && flock -n " + root.shellQuote(dir + "/install.lock") + " bash -c " + root.shellQuote(root.installInnerCommand())
-  }
-
-  function installOmatalk() {
-    var wrapped = "omarchy-launch-floating-terminal-with-presentation " + root.shellQuote(root.installLaunchCommand())
-    lastLaunchCommand = wrapped
-    if (root.bar && typeof root.bar.run === "function") root.bar.run(wrapped)
+  function copyInstallCommand() {
+    copyProc.command = ["wl-copy", root.installCommand]
+    copyProc.running = true
   }
 
   function refresh() {
@@ -213,6 +180,11 @@ Panel {
     onExited: function(exitCode) { if (exitCode === 0) root.speedError = "" }
   }
 
+  Process {
+    id: copyProc
+    onExited: function(exitCode) { if (exitCode === 0) root.installCommandCopied = true }
+  }
+
   // Plugin version is this checkout's manifest.json, not `omatalk version`.
   FileView {
     id: manifestFile
@@ -287,10 +259,47 @@ Panel {
               objectName: "omatalkSetupNote"
               width: parent.width
               wrapMode: Text.WordWrap
-              text: "Omatalk is not installed. Click below to install it."
+              text: "Omatalk's speech Daemon is not installed. Run this in a terminal:"
               color: Color.popups.text
               font.family: Style.font.family
               font.pixelSize: Style.font.body
+            }
+
+            // Terminal-style block so the command reads as something to run.
+            Rectangle {
+              width: parent.width
+              height: commandRow.implicitHeight + Style.space(16)
+              color: Qt.darker(Color.popups.background, 1.5)
+              border.color: Color.popups.border
+              border.width: 1
+              radius: Style.space(4)
+
+              Row {
+                id: commandRow
+                x: Style.space(10)
+                y: Style.space(8)
+                width: parent.width - Style.space(20)
+                spacing: Style.space(8)
+
+                Text {
+                  id: commandPrompt
+                  text: "$"
+                  color: Color.accent
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+
+                Text {
+                  objectName: "omatalkInstallCommand"
+                  width: parent.width - commandPrompt.width - parent.spacing
+                  wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                  text: root.installCommand
+                  color: Color.popups.text
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.body
+                }
+              }
             }
 
             Text {
@@ -306,13 +315,13 @@ Panel {
           }
 
           Button {
-            objectName: "omatalkInstallButton"
+            objectName: "omatalkCopyInstallButton"
             width: parent.width
-            text: "Install Omatalk"
+            text: root.installCommandCopied ? "Copied. Paste it in a terminal" : "Copy install command"
             bordered: true
             foreground: Color.popups.text
             fontFamily: Style.font.family
-            onClicked: root.installOmatalk()
+            onClicked: root.copyInstallCommand()
           }
         }
 
