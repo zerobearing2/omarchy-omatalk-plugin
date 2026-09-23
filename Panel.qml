@@ -5,9 +5,9 @@ import qs.Commons
 import qs.Ui
 
 // Voice + speed config panel once the Daemon launcher exists. Until then
-// this is a setup screen: Install fetches a pinned omatalk install.sh,
-// verifies SHA-256, and runs it in Omarchy's floating terminal. Config
-// CLI processes stay stopped while ~/.local/bin/omatalk is missing.
+// this is a setup screen: Install runs the install.sh shipped in this
+// checkout, in Omarchy's floating terminal. Config CLI processes stay
+// stopped while ~/.local/bin/omatalk is missing.
 Panel {
   id: root
   moduleName: "zerobearing.omatalk"
@@ -19,9 +19,6 @@ Panel {
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
   readonly property bool showingSetup: !daemonInstalled
-  // Pinned Daemon installer. Workspace `make pin` rewrites URL + sha256.
-  readonly property string installerUrl: "https://raw.githubusercontent.com/zerobearing2/omatalk/830e45dd18c29e9ea5f358bea432fcadba40af53/install.sh"
-  readonly property string installerSha256: "aa89363f42a99bf3e31e280a6fe5d5625125baa9719479a87bdac1e407613bee"
   property string launcherPath: {
     var home = root.envText("HOME")
     if (home !== "") return home + "/.local/bin/omatalk"
@@ -80,6 +77,15 @@ Panel {
     return "'" + String(value).replace(/'/g, "'\\''") + "'"
   }
 
+  // Panel.qml and install.sh live in the plugin root (store clone or this checkout).
+  function pluginFile(name) {
+    var url = String(Qt.resolvedUrl(name))
+    if (url.indexOf("file://") === 0) return url.slice(7)
+    return url
+  }
+
+  readonly property string installerPath: root.pluginFile("install.sh")
+
   function installLockDir() {
     var runtime = root.envText("XDG_RUNTIME_DIR")
     if (runtime === "") runtime = "/tmp"
@@ -88,17 +94,15 @@ Panel {
 
   function installInnerCommand() {
     var dir = root.installLockDir()
+    var script = root.installerPath
     return [
       "set -euo pipefail",
       "mkdir -p " + root.shellQuote(dir),
       "printf '%s\\n' " + root.shellQuote("This will install the Omatalk daemon: a systemd --user service, a Python venv, and voice models (~185MB) under ~/.local/share/omatalk."),
       "read -r -p " + root.shellQuote("Continue? [y/N] ") + " answer < /dev/tty",
       "[[ ${answer:-} =~ ^[Yy]$ ]] || exit 0",
-      "tmp=$(mktemp " + root.shellQuote(dir + "/install.XXXXXX") + ")",
-      "trap 'rm -f \"$tmp\"' EXIT",
-      "curl -fsS --proto '=https' --tlsv1.2 --max-redirs 0 -o \"$tmp\" " + root.shellQuote(root.installerUrl),
-      "printf '%s  %s\\n' " + root.shellQuote(root.installerSha256) + " \"$tmp\" | sha256sum -c --strict",
-      "bash \"$tmp\""
+      "test -f " + root.shellQuote(script) + " || { echo 'missing install.sh in this plugin checkout' >&2; exit 1; }",
+      "bash " + root.shellQuote(script)
     ].join("\n")
   }
 
@@ -212,11 +216,7 @@ Panel {
   // Plugin version is this checkout's manifest.json, not `omatalk version`.
   FileView {
     id: manifestFile
-    path: {
-      var url = String(Qt.resolvedUrl("manifest.json"))
-      if (url.indexOf("file://") === 0) return url.slice(7)
-      return url
-    }
+    path: root.pluginFile("manifest.json")
     printErrors: false
     onLoaded: {
       try {

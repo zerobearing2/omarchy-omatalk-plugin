@@ -25,9 +25,11 @@ omarchy plugin add https://github.com/zerobearing2/omarchy-omatalk-plugin.git --
 ```
 
 If the Daemon is not installed, click the megaphone and choose Install Omatalk.
-That fetches a pinned `install.sh` from
-[zerobearing2/omatalk](https://github.com/zerobearing2/omatalk), checks its
-SHA-256, and runs it in Omarchy's floating terminal. Models are about 185MB.
+That runs the `install.sh` shipped in this checkout (a copy of the script in
+[zerobearing2/omatalk](https://github.com/zerobearing2/omatalk)) in Omarchy's
+floating terminal. That copy pins a specific Daemon GitHub release (tag and
+SHA-256 in the script). Later Daemon updates are `omatalk upgrade`. Models
+are about 185MB.
 
 If the megaphone is missing or the panel still looks like an older checkout,
 reload the bar:
@@ -75,7 +77,19 @@ The installer never edits `bindings.lua` or `config.toml`.
 ## Development
 
 This repository is the plugin. The Daemon, CLI, and site live in
-https://github.com/zerobearing2/omatalk. Default branch is `master`.
+https://github.com/zerobearing2/omatalk, where this tree is the `plugin/`
+submodule. Default branch is `master`. Releases are cut from that repo:
+
+```sh
+make plugin-bump
+git -C plugin switch master
+make plugin-release
+```
+
+That copies the current Daemon `install.sh`, runs tests, commits, pushes,
+and creates the GitHub release. Same shape as Daemon `make bump` /
+`make release`. Plugin release requires `plugin/` on `master` and a
+published Daemon GitHub release for the copied `RELEASE_TAG`.
 
 ```sh
 ./tests/run.sh
