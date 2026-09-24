@@ -5,9 +5,9 @@ import qs.Commons
 import qs.Ui
 
 // Voice + speed config panel once the Daemon launcher exists. Until then
-// this is a setup screen showing the site install command to paste into a
-// terminal; the plugin itself never downloads or runs an installer. Config
-// CLI processes stay stopped while ~/.local/bin/omatalk is missing.
+// this is a setup screen that links to the site's install instructions; the
+// plugin itself never downloads or runs an installer. Config CLI processes
+// stay stopped while ~/.local/bin/omatalk is missing.
 Panel {
   id: root
   moduleName: "zerobearing.omatalk"
@@ -15,8 +15,7 @@ Panel {
   property var anchorItem: null
   property bool daemonUnavailable: false
   property bool daemonInstalled: false
-  property bool installCommandCopied: false
-  readonly property string installCommand: "curl -fsSL https://omatalk.zerobearing.com/install.sh | bash"
+  readonly property string installUrl: "https://omatalk.zerobearing.com/#install"
 
   readonly property var englishPrefixes: ["af_", "am_", "bf_", "bm_"]
   readonly property bool showingSetup: !daemonInstalled
@@ -81,9 +80,9 @@ Panel {
     return url
   }
 
-  function copyInstallCommand() {
-    copyProc.command = ["wl-copy", root.installCommand]
-    copyProc.running = true
+  function openInstallPage() {
+    openProc.command = ["xdg-open", root.installUrl]
+    openProc.running = true
   }
 
   function refresh() {
@@ -180,10 +179,7 @@ Panel {
     onExited: function(exitCode) { if (exitCode === 0) root.speedError = "" }
   }
 
-  Process {
-    id: copyProc
-    onExited: function(exitCode) { if (exitCode === 0) root.installCommandCopied = true }
-  }
+  Process { id: openProc }
 
   // Plugin version is this checkout's manifest.json, not `omatalk version`.
   FileView {
@@ -251,77 +247,27 @@ Panel {
           width: parent.width
           spacing: Style.space(14)
 
-          Column {
+          Text {
+            objectName: "omatalkSetupNote"
             width: parent.width
-            spacing: Style.space(6)
-
-            Text {
-              objectName: "omatalkSetupNote"
-              width: parent.width
-              wrapMode: Text.WordWrap
-              text: "Omatalk's speech Daemon is not installed. Run this in a terminal:"
-              color: Color.popups.text
-              font.family: Style.font.family
-              font.pixelSize: Style.font.body
-            }
-
-            // Terminal-style block so the command reads as something to run.
-            Rectangle {
-              width: parent.width
-              height: commandRow.implicitHeight + Style.space(16)
-              color: Qt.darker(Color.popups.background, 1.5)
-              border.color: Color.popups.border
-              border.width: 1
-              radius: Style.space(4)
-
-              Row {
-                id: commandRow
-                x: Style.space(10)
-                y: Style.space(8)
-                width: parent.width - Style.space(20)
-                spacing: Style.space(8)
-
-                Text {
-                  id: commandPrompt
-                  text: "$"
-                  color: Color.accent
-                  font.family: Style.font.family
-                  font.pixelSize: Style.font.body
-                  font.bold: true
-                }
-
-                Text {
-                  objectName: "omatalkInstallCommand"
-                  width: parent.width - commandPrompt.width - parent.spacing
-                  wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                  text: root.installCommand
-                  color: Color.popups.text
-                  font.family: Style.font.family
-                  font.pixelSize: Style.font.body
-                }
-              }
-            }
-
-            Text {
-              objectName: "omatalkSetupModelsNote"
-              width: parent.width
-              wrapMode: Text.WordWrap
-              text: "Models are about 185MB and the download can take a few minutes."
-              color: Qt.darker(Color.popups.text, 1.3)
-              font.family: Style.font.family
-              font.pixelSize: Style.font.body
-              font.italic: true
-            }
+            wrapMode: Text.WordWrap
+            text: "Omatalk's speech Daemon is not installed.\n\nInstall instructions:\n" + root.installUrl
+            color: Color.popups.text
+            font.family: Style.font.family
+            font.pixelSize: Style.font.body
           }
 
           Button {
-            objectName: "omatalkCopyInstallButton"
+            objectName: "omatalkOpenInstallButton"
             width: parent.width
-            text: root.installCommandCopied ? "Copied. Paste it in a terminal" : "Copy install command"
+            text: "Open install instructions"
             bordered: true
             foreground: Color.popups.text
             fontFamily: Style.font.family
-            onClicked: root.copyInstallCommand()
+            onClicked: {
+              root.openInstallPage()
+              root.close()
+            }
           }
         }
 

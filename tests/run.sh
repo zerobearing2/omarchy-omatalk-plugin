@@ -12,7 +12,7 @@ for f in manifest.json BarWidget.qml Panel.qml README.md LICENSE preview.png; do
 done
 
 # The plugin never downloads or runs the Daemon installer; setup is the
-# site command the panel shows.
+# site's install page the panel links to.
 for f in install.sh uninstall.sh; do
   if [[ -e $f ]]; then
     echo "$f must not live in the plugin tree" >&2

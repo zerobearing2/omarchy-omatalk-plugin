@@ -44,8 +44,8 @@ TestCase {
     verify(!panel.isEnglishVoice("jf_alpha"))
   }
 
-  function test_setup_shows_the_site_install_command() {
-    compare(panel.installCommand, "curl -fsSL https://omatalk.zerobearing.com/install.sh | bash")
+  function test_setup_points_at_the_site_install_page() {
+    compare(panel.installUrl, "https://omatalk.zerobearing.com/#install")
     verify(panel.showingSetup)
   }
 
@@ -58,20 +58,11 @@ TestCase {
     compare(findProc("config voices --json").running, false)
   }
 
-  function test_copy_puts_install_command_on_clipboard() {
-    compare(panel.installCommandCopied, false)
-    panel.copyInstallCommand()
-    var copy = findProc("wl-copy")
-    verify(copy.running)
-    compare(copy.command[1], panel.installCommand)
-    copy.complete(0, "", "")
-    verify(panel.installCommandCopied)
-  }
-
-  function test_failed_copy_is_not_reported_as_copied() {
-    panel.copyInstallCommand()
-    findProc("wl-copy").complete(1, "", "no display")
-    compare(panel.installCommandCopied, false)
+  function test_open_install_page_launches_the_browser() {
+    panel.openInstallPage()
+    var open = findProc("xdg-open")
+    verify(open.running)
+    compare(open.command[1], panel.installUrl)
   }
 
   function test_launcher_appearing_refreshes_config() {

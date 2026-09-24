@@ -14,8 +14,8 @@ parent it.
 
 - Omarchy with Quickshell plugin support.
 - The Omatalk Daemon: uv, Kokoro models (~185MB), a systemd user unit,
-  PipeWire, and wl-clipboard. If the Daemon is missing, the panel shows the
-  install command to paste into a terminal.
+  PipeWire, and wl-clipboard. If the Daemon is missing, the panel says so and
+  links to the install instructions.
 - No sudo. No pkexec. The plugin does not start a second Quickshell process.
 
 ## Install
@@ -26,7 +26,7 @@ omarchy plugin add https://github.com/zerobearing2/omarchy-omatalk-plugin.git --
 
 Then install the Daemon from a terminal, following
 https://omatalk.zerobearing.com/#install. Until it is installed, the panel
-shows the same command with a copy button.
+links to that page.
 
 The plugin never downloads or runs an installer itself. Later Daemon updates
 are `omatalk upgrade`. Models are about 185MB.
