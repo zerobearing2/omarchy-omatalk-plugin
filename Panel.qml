@@ -251,7 +251,7 @@ Panel {
             objectName: "omatalkSetupNote"
             width: parent.width
             wrapMode: Text.WordWrap
-            text: "Omatalk's speech Daemon is not installed. Install instructions:\n" + root.installUrl
+            text: "Omatalk's speech Daemon is not installed.\n\nInstall instructions:\n" + root.installUrl
             color: Color.popups.text
             font.family: Style.font.family
             font.pixelSize: Style.font.body
